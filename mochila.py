@@ -1,12 +1,12 @@
 from itertools import permutations
 import random
-mochila = {
-    1 : ["manzana",30,50,60],
-    2 : ["pera",28,30,60],
-    3 : ["chocolate",120,20,150],
-    4 : ["mango",40,60,110],
-    5 : ["paleta",70,8,80],
-}
+mochila = {}
+
+
+
+# un escript que lea el exel y lo deje en este formato
+
+
 
 poblacion = []
 arreglo_de_claves = []
@@ -53,11 +53,42 @@ def reparar_hijos(hijos_sin_reparar):
         hijos_reparados.append(auxiliar_elementos_usados)
     return hijos_reparados
         
+
 def mutacion(hijos_reparados):
-    return 1
+    posibilidad_mut_individuo = 50
+    posibilidad_mut_gen = 25
+    for hijo in hijos_reparados:
+        arreglo_posiciones_que_mutan=[]
+        if random.randint(0,100) <= posibilidad_mut_individuo :
+            for posicion in range(len(hijo)):
+                if random.randint(0,100) <= posibilidad_mut_gen :
+                    arreglo_posiciones_que_mutan.append(posicion)
+        Intercambio_de_valor(arreglo_posiciones_que_mutan, hijo)
+
+#metodo de modificar gen por intercambio de valor
+def Intercambio_de_valor(arreglo_posiciones_que_mutan,hijo):
+    global poblacion
+    print(arreglo_posiciones_que_mutan)
+
+    for elemento in arreglo_posiciones_que_mutan:
+        posicion_random = random.randint(0,len(hijo)-1)
+        print(posicion_random)
+        #hace referencia al valor que va cambiar
+        print(elemento)
+        elemento_1 = hijo[elemento]
+        #hace referencia al valor por el que se cambiara
+        elemento_2 = hijo[posicion_random]
+
+        hijo[elemento] = elemento_2
+        hijo[posicion_random] = elemento_1
+    poblacion.append(hijo)
+    print(poblacion)
+
+
+
+
+
         
-
-
 def main():
     global poblacion
     arreglo_permutaciones = generar_n_individuos_permutacion()
@@ -72,13 +103,11 @@ def main():
     hijos_reparados = reparar_hijos(hijos_sin_reparar)
     print("hijos reparados: ", hijos_reparados,"\n")
 
-    hijos_mutados = mutacion(hijos_reparados)
+    mutacion(hijos_reparados)
 
     poblacion.extend(parejas_aleatorias)
     ## despues de la mutacion
     poblacion.extend(hijos_reparados) 
     print("poblacion final: ", poblacion,"\n")
-
-
 
 main()
