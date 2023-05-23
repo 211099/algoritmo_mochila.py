@@ -1,16 +1,26 @@
 from itertools import permutations
 import pandas as pd
 import random
+import tkinter as tk
+from tkinter import ttk
+
+
 mochila = {}
-
 posicion_valor_diferencia = {}
-
 poblacion = []
-
+el_mejor = []
 arreglo_de_claves = []
 
-# 
-numero_de_poblacion_iniical = 2
+#valores que introduce el usuario
+valores_atributos = []
+
+numero_de_poblacion_iniical = 0#2
+
+posibilidad_mut_individuo = 0#60
+
+posibilidad_mut_gen = 0#10
+
+numero_iteraciones = 0#30
 
 
 # un escript que lea el exel y lo deje en este formato
@@ -23,6 +33,7 @@ def leer_exel():
             inicio = inicio + 1
         else: 
             mochila[index+1-4] = [row[col] for col  in range(13)]
+    
 
 
 def generar_n_individuos_aleatorios():
@@ -83,8 +94,7 @@ def reparar_hijos(hijos_sin_reparar):
 # 2,1,3,5,4,6
 
 def mutacion(hijos_reparados):
-    posibilidad_mut_individuo = 60
-    posibilidad_mut_gen = 10
+    
     for hijo in hijos_reparados:
         arreglo_posiciones_que_mutan=[]
 
@@ -125,7 +135,7 @@ def Intercambio_de_valor(arreglo_posiciones_que_mutan,hijo):
   #3,1,2,5,4,6
 
                     #mochila    #poblacion
-def sumar_valores(diccionario, lista_claves):
+def sumar_valores(diccionario, lista_claves, opcion):
     # Inicializar variables para sumar los valores
     contador = 0
 
@@ -137,7 +147,6 @@ def sumar_valores(diccionario, lista_claves):
         valores = [0] * 11
         num_elemtos = 30   
         aux = individuo[:num_elemtos]
-
         # Iterar a través de las claves en la lista
         #aux son los primeros 30 elementos de l individuo
         for clave in aux:
@@ -161,21 +170,21 @@ def sumar_valores(diccionario, lista_claves):
         resultado.append(valores)
         posicion_valor_diferencia[contador] = resultado
         contador += 1
+        if opcion == 1:
+            data_fin_tabla = resultado
+            return data_fin_tabla
+    
+        
 
-# [[alimnetos],[categorias],[atributos]]
+#
 
 
 def obtener_diferencia():
-    
-    valores_atributos = [3200,260,150,20,1,10,10,1,1,1,1]
-    # for i in range(11):
-    #     valores_atributos.append(int(input(str(i) + ": ")))
-  
     for elemento in range(len(posicion_valor_diferencia)):
         aux_valores = []
         aux = 0
         for atributos in posicion_valor_diferencia[elemento][2]:
-            valor = atributos - valores_atributos[aux]
+            valor = atributos - int(valores_atributos[aux])
             aux_valores.append(valor)
             aux = aux + 1
         posicion_valor_diferencia[elemento].append(aux_valores)
@@ -197,19 +206,127 @@ def ordenar_elitsta():
     combinado = list(zip(posicion_valor_diferencia.values(), poblacion))
     ordenado = sorted(combinado, key=lambda x: x[0][4])
     arreglos_ordenados = [tupla[1] for tupla in ordenado]
+    
     poblacion = arreglos_ordenados[:7]
 
-def main():
 
+def obtener_valores_grafica(mayor,menor):
+    mejor = sumar_valores(mochila,mayor,1)
+    peor = sumar_valores(mochila ,menor,1)
+
+def obtener_valores_tabla():
     global poblacion
+    global mochila
+    arreglo2 = []
+    for clave in poblacion[0][:30]:
+        valores = mochila.get(clave)
+        arreglo2.append(valores)
+    return arreglo2
+
+def obtener_diferencia_final(arreglo2):
+    arreglo4 = []
+    aux_valores = []
+    aux = 0
+    for atributos in arreglo2[2]:
+            valor = atributos - int(valores_atributos[aux])
+            aux_valores.append(valor)
+            aux = aux + 1
+    arreglo4.append(aux_valores)
+    return arreglo4
+
+
+
+
+def show(arreglo1,arreglo2,arreglo3,arreglo4):
+    root = tk.Tk()
+    treeview = ttk.Treeview(root, columns=[str(i) for i in range(13)], show="headings")
+
+    headers = ['Nombre', 'Categoria', 'Energía (Kcal)', 'Proteina (g)', 'Grasa(g)', 'calcio (mg)',
+           'Hierro (mg)', 'Vitamina A(mg)', 'Tiamina (mg)', 'Riboflavina (mg)', 'Niacina (mg)', 'Folato(mg)', 'Vitamina C(mg)']
+
+    for i, col in enumerate(headers):
+        treeview.heading(f'{i}', text=col)
+        treeview.column(f'{i}', width=120)
+
+
+    for row in arreglo1:
+        treeview.insert('', 'end', values=row)
+
+    treeview.insert('', 'end', values=["Total"] + [""] + arreglo2)
+    treeview.insert('', 'end', values=["Requerido"] + [""] + arreglo3)
+    treeview.insert('', 'end', values=["Diferencia"] + [""]  + arreglo4)
+    treeview.configure(height=33)
+    treeview.pack()
+    root.mainloop()
+
+
+def create_input_window():
+      # Función para obtener los datos de los inputs al hacer clic en el botón
+    def get_input_values():
+        global valores_atributos
+        global numero_de_poblacion_iniical 
+        global posibilidad_mut_individuo  
+        global posibilidad_mut_gen 
+        global numero_iteraciones 
+        input_values = [entry.get() for entry in entry_list[:11]]
+        remaining_values = [entry.get() for entry in entry_list[11:]]
+        root.destroy()
+        valores_atributos = input_values
+        numero_de_poblacion_iniical = int(remaining_values[0])
+        posibilidad_mut_individuo = int(remaining_values[1])
+        posibilidad_mut_gen = int(remaining_values[2])
+        numero_iteraciones = int(remaining_values[3])
+        return input_values, remaining_values
+
+    root = tk.Tk()
+    root.title("Ventana de Inputs")
+
+    # Crea una etiqueta a la izquierda y un Entry a la derecha
+    def create_label_and_entry(parent, label_text):
+        frame = ttk.Frame(parent)
+        frame.pack(fill="x", pady=5)
+
+        label = ttk.Label(frame, text=label_text, width=30, anchor="e", font=("Arial", 15))
+        label.pack(side="left", padx=(10, 5))
+
+        entry = ttk.Entry(frame)
+        entry.pack(side="right", fill="x", expand=True, padx=(0, 10))
+
+        return entry
+    
+    atributos = ["Energía","Proteína","Grasa","Calcio","Hierro","Vitamina A","Tiamina","Riboflavina","Niacina","Folato","Vitamina C"]
+    entrdas = ["cantidad de poblacion inicial","posibilidad de mutacion del individuo", "posibilidad de mutacion del gen", "numero de iteraciones"]
+    entry_list = []
+    for i in range(11):
+        entry = create_label_and_entry(root, f"{atributos[i]}:")
+        entry_list.append(entry)
+
+    separator = ttk.Separator(root, orient="horizontal")
+    separator.pack(fill="x", pady=10)
+
+    for i in range(0, 4):
+        entry = create_label_and_entry(root, f"{entrdas[i]}:")
+        entry_list.append(entry)
+
+    button = ttk.Button(root, text="Obtener valores", command=get_input_values)
+    button.pack(pady=10)
+    root.mainloop()
+    
+    
+
+def main():
+    create_input_window()
+    global poblacion
+    global el_mejor
+
     leer_exel()
 
-    numero_iteraciones = 30
+    
     
     poblacion = generar_n_individuos_aleatorios()
   
       ##inicia el bucle
-    for i in range(numero_iteraciones):
+    for i in range(30):
         parejas_aleatorias = seleccion_parejas()
             
 
@@ -221,20 +338,28 @@ def main():
 
         mutacion(hijos_reparados)
 
-        sumar_valores(mochila, poblacion)
+        sumar_valores(mochila, poblacion, 0)
 
         obtener_diferencia()
 
         calcular_suma_distancias()
 
         ordenar_elitsta()
-        
-    print(poblacion)
-        
-    ##termina el bucle
-    ## despues de la mutacion
+    
 
+        
+        ##termina el bucle
+        ## despues de la mutacion
 
+    ##obtener datospara la tabla
+    el_mejor.append(poblacion[0])
+    arreglo1 = obtener_valores_tabla()
+    arreglo2 = sumar_valores(mochila, el_mejor, 1)
+    arreglo3 = valores_atributos
+    arreglo4 = obtener_diferencia_final(arreglo2)
+    show(arreglo1,arreglo2[2],arreglo3,arreglo4[0])
+   
+   
 
 
 main()
