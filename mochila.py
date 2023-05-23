@@ -1,8 +1,10 @@
-from itertools import permutations
 import pandas as pd
 import random
 import tkinter as tk
 from tkinter import ttk
+import matplotlib.pyplot as plt
+import numpy as np
+import mplcursors
 
 
 mochila = {}
@@ -10,6 +12,8 @@ posicion_valor_diferencia = {}
 poblacion = []
 el_mejor = []
 arreglo_de_claves = []
+arreglo_mejor = []
+arreglo_peor = []
 
 #valores que introduce el usuario
 valores_atributos = []
@@ -206,13 +210,22 @@ def ordenar_elitsta():
     combinado = list(zip(posicion_valor_diferencia.values(), poblacion))
     ordenado = sorted(combinado, key=lambda x: x[0][4])
     arreglos_ordenados = [tupla[1] for tupla in ordenado]
-    
+    obtener_valores_grafica([arreglos_ordenados[0]],[arreglos_ordenados[-1]])
     poblacion = arreglos_ordenados[:7]
 
 
 def obtener_valores_grafica(mayor,menor):
+    
     mejor = sumar_valores(mochila,mayor,1)
+    mejor = obtener_diferencia_final(mejor)
+    mejor = sum(abs(elemento) for elemento in mejor[0])
+    arreglo_mejor.append(mejor)
     peor = sumar_valores(mochila ,menor,1)
+    peor = obtener_diferencia_final(peor)
+    peor = sum(abs(elemento) for elemento in peor[0])
+    arreglo_peor.append(peor)
+
+
 
 def obtener_valores_tabla():
     global poblacion
@@ -238,6 +251,22 @@ def obtener_diferencia_final(arreglo2):
 
 
 def show(arreglo1,arreglo2,arreglo3,arreglo4):
+    def update_graph():
+    # Datos de ejemplo
+        iteraciones = np.arange(0,numero_iteraciones) # Un array de 0 a 100, reemplaza esto con tus datos
+        linea1 = arreglo_mejor
+        linea2 = arreglo_peor
+        plt.figure(figsize=(10,6))
+        plt.plot(iteraciones, linea1, marker='o', linestyle='-', label='El mejor')
+        plt.plot(iteraciones, linea2, marker='o', linestyle='-', label='El peor')
+        plt.ylim(0, 6000)
+        plt.xlabel('Iteraciones')
+        plt.ylabel('Valor')
+        plt.title('Gráfico de Lineas')
+        plt.legend()
+        mplcursors.cursor(hover=True)
+        plt.show()
+
     root = tk.Tk()
     treeview = ttk.Treeview(root, columns=[str(i) for i in range(13)], show="headings")
 
@@ -257,6 +286,8 @@ def show(arreglo1,arreglo2,arreglo3,arreglo4):
     treeview.insert('', 'end', values=["Diferencia"] + [""]  + arreglo4)
     treeview.configure(height=33)
     treeview.pack()
+    update_button = tk.Button(root, text="Actualizar gráfica", command=update_graph)
+    update_button.pack()
     root.mainloop()
 
 
