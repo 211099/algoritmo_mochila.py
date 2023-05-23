@@ -2,8 +2,11 @@ from itertools import permutations
 import pandas as pd
 import random
 mochila = {}
+
 posicion_valor_diferencia = {}
+
 poblacion = []
+
 arreglo_de_claves = []
 
 # 
@@ -34,17 +37,15 @@ def generar_n_individuos_aleatorios():
         auxiliar_claves_copia = auxiliar_claves[:] # crea una copia de la lista
         random.shuffle(auxiliar_claves_copia) # baraja la copia
         poblacion_inicial.append(auxiliar_claves_copia) # agrega la copia barajada a la población inicial
-        poblacion.append(auxiliar_claves_copia)
     return poblacion_inicial
    
-def seleccion_parejas(arreglo_permutaciones):
-    numero_de_parejas = 1
-    parejas_aleatorias = [random.sample(arreglo_permutaciones, 2) for _ in range(numero_de_parejas)]
-    print(parejas_aleatorias)
+def seleccion_parejas():
+    numero_de_parejas = 5
+    parejas_aleatorias = [random.sample(poblacion, 2) for _ in range(numero_de_parejas)]
     return parejas_aleatorias
 
 def cruza(parejas_aleatorias):
-    punto_de_cruce = 2
+    punto_de_cruce = 15
     hijos = []
     for pareja in parejas_aleatorias:
         tupla1 = pareja[0]
@@ -61,65 +62,84 @@ def reparar_hijos(hijos_sin_reparar):
     global arreglo_de_claves
     hijos_reparados = []
     for hijo in hijos_sin_reparar:
+
         auxiliar_elementos_usados = []
+
         for elemanto in hijo:
+
             if elemanto in auxiliar_elementos_usados:
+                 
                  for claves in arreglo_de_claves: 
+                     
                      if claves not in auxiliar_elementos_usados:
                          auxiliar_elementos_usados.append(claves)
                          break
             else:       
                 auxiliar_elementos_usados.append(elemanto)
+
         hijos_reparados.append(auxiliar_elementos_usados)
     return hijos_reparados
         
+# 2,1,3,5,4,6
 
 def mutacion(hijos_reparados):
-    posibilidad_mut_individuo = 99
-    posibilidad_mut_gen = 25
+    posibilidad_mut_individuo = 90
+    posibilidad_mut_gen = 10
     for hijo in hijos_reparados:
         arreglo_posiciones_que_mutan=[]
+
         if random.randint(0,100) <= posibilidad_mut_individuo :
+
             for posicion in range(len(hijo)):
+
                 if random.randint(0,100) <= posibilidad_mut_gen :
                     arreglo_posiciones_que_mutan.append(posicion)
+
             Intercambio_de_valor(arreglo_posiciones_que_mutan, hijo)
+
         else:
             poblacion.append(hijo)
-   
+# 0 1 2 3 4 5
+# 2,1,3,5,4,6
+# . * * * . *
 
 #metodo de modificar gen por intercambio de valor
 def Intercambio_de_valor(arreglo_posiciones_que_mutan,hijo):
     global poblacion
-    print(arreglo_posiciones_que_mutan)
-
     for elemento in arreglo_posiciones_que_mutan:
         posicion_random = random.randint(0,len(hijo)-1)
-        print(posicion_random)
+     
         #hace referencia al valor que va cambiar
-        print(elemento)
-        elemento_1 = hijo[elemento]
+
+        elemento_1 = hijo[elemento]#2
         #hace referencia al valor por el que se cambiara
-        elemento_2 = hijo[posicion_random]
+        elemento_2 = hijo[posicion_random]#3
 
         hijo[elemento] = elemento_2
+
         hijo[posicion_random] = elemento_1
+
     poblacion.append(hijo)
-    print(poblacion)
   
+  #3,1,3,5,4,6
+  #3,1,2,5,4,6
 
-
+                    #mochila    #poblacion
 def sumar_valores(diccionario, lista_claves):
     # Inicializar variables para sumar los valores
     contador = 0
+
     for individuo in lista_claves:
+
         resultado = []
         nombre_elementos = []
         categorias = []
         valores = [0] * 11
-        aleatorio = 30   #random.randrange(0,29)
-        aux = individuo[:aleatorio]
+        num_elemtos = 30   
+        aux = individuo[:num_elemtos]
+
         # Iterar a través de las claves en la lista
+        #aux son los primeros 30 elementos de l individuo
         for clave in aux:
             # Obtener el elemento correspondiente y agregar su nombre
             elemento = diccionario[clave]
@@ -128,7 +148,6 @@ def sumar_valores(diccionario, lista_claves):
 
             # Sumar los valores del elemento
             for i in range(2, len(elemento)):
-                print(elemento[i])
                 valores[i-2] += elemento[i]
 
         # Retornar el resultado como una lista
@@ -138,10 +157,12 @@ def sumar_valores(diccionario, lista_claves):
         posicion_valor_diferencia[contador] = resultado
         contador += 1
 
+# [[alimnetos],[categorias],[atributos]]
+
+
 def obtener_diferencia():
-    print("(0)Azucar\n(1)Proteína\n(2)Grasa\n(3)Calcio\n(4)Hierro\n(5)Vitamina A\n(6)Tiamina\n(7)Riboflavina\n(8)Niacina\n(9)Folato\n(10)Vitamina C\n")
-    print("Acontinuacion agrega los valores que quieras que tenga cada atributo")
-    valores_atributos = [3200,200,200,200,200,200,100,200,200,200,200]
+    
+    valores_atributos = [3200,260,150,2000,120,8000,100,600,30,300,300]
     # for i in range(11):
     #     valores_atributos.append(int(input(str(i) + ": ")))
   
@@ -151,7 +172,7 @@ def obtener_diferencia():
         for atributos in posicion_valor_diferencia[elemento][2]:
             valor = atributos - valores_atributos[aux]
             aux_valores.append(valor)
-            aux =+ 1
+            aux = aux + 1
         posicion_valor_diferencia[elemento].append(aux_valores)
 
 
@@ -168,40 +189,43 @@ def calcular_suma_distancias():
 
 def ordenar_elitsta():
     global poblacion
-    print("holaaaaaaaaaaaaaaaaaa")
     combinado = list(zip(posicion_valor_diferencia.values(), poblacion))
     ordenado = sorted(combinado, key=lambda x: x[0][4])
     arreglos_ordenados = [tupla[1] for tupla in ordenado]
-    print(arreglos_ordenados)
-    poblacion = arreglos_ordenados
+    poblacion = arreglos_ordenados[:7]
 
 def main():
 
     global poblacion
     leer_exel()
+
+    numero_iteraciones = 11
     
-    arreglo_permutaciones = generar_n_individuos_aleatorios()
+    poblacion = generar_n_individuos_aleatorios()
   
       ##inicia el bucle
-    parejas_aleatorias = seleccion_parejas(arreglo_permutaciones)
-    
+    for i in range(numero_iteraciones):
+        parejas_aleatorias = seleccion_parejas()
+            
 
-    hijos_sin_reparar = cruza(parejas_aleatorias)
-    
+        hijos_sin_reparar = cruza(parejas_aleatorias)
+            
 
-    hijos_reparados = reparar_hijos(hijos_sin_reparar)
- 
+        hijos_reparados = reparar_hijos(hijos_sin_reparar)
+        
 
-    mutacion(hijos_reparados)
+        mutacion(hijos_reparados)
 
-    sumar_valores(mochila, poblacion)
+        sumar_valores(mochila, poblacion)
 
-    obtener_diferencia()
+        obtener_diferencia()
 
-    calcular_suma_distancias()
+        calcular_suma_distancias()
 
-    ordenar_elitsta()
-    
+        ordenar_elitsta()
+        
+    print(poblacion)
+        
     ##termina el bucle
     ## despues de la mutacion
 
