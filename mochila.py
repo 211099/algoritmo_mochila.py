@@ -45,7 +45,7 @@ def seleccion_parejas():
     return parejas_aleatorias
 
 def cruza(parejas_aleatorias):
-    punto_de_cruce = 15
+    punto_de_cruce = 8
     hijos = []
     for pareja in parejas_aleatorias:
         tupla1 = pareja[0]
@@ -83,7 +83,7 @@ def reparar_hijos(hijos_sin_reparar):
 # 2,1,3,5,4,6
 
 def mutacion(hijos_reparados):
-    posibilidad_mut_individuo = 90
+    posibilidad_mut_individuo = 60
     posibilidad_mut_gen = 10
     for hijo in hijos_reparados:
         arreglo_posiciones_que_mutan=[]
@@ -148,7 +148,12 @@ def sumar_valores(diccionario, lista_claves):
 
             # Sumar los valores del elemento
             for i in range(2, len(elemento)):
-                valores[i-2] += elemento[i]
+                if i in [5, 6, 9, 10, 12] :
+                    valores[i-2] += elemento[i]/1000
+                elif i in  [7 , 11]:
+                    valores[i-2] += elemento[i]/1000
+                else:
+                    valores[i-2] += elemento[i]
 
         # Retornar el resultado como una lista
         resultado.append(nombre_elementos)
@@ -162,7 +167,7 @@ def sumar_valores(diccionario, lista_claves):
 
 def obtener_diferencia():
     
-    valores_atributos = [3200,260,150,2000,120,8000,100,600,30,300,300]
+    valores_atributos = [3200,260,150,20,1,10,10,1,1,1,1]
     # for i in range(11):
     #     valores_atributos.append(int(input(str(i) + ": ")))
   
@@ -199,7 +204,7 @@ def main():
     global poblacion
     leer_exel()
 
-    numero_iteraciones = 11
+    numero_iteraciones = 30
     
     poblacion = generar_n_individuos_aleatorios()
   
