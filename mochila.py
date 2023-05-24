@@ -20,6 +20,10 @@ valores_atributos = []
 
 numero_de_poblacion_iniical = 0#2
 
+poblacion_maxima = 0#7
+
+posibilidad_cruza = 0#80
+
 posibilidad_mut_individuo = 0#60
 
 posibilidad_mut_gen = 0#10
@@ -63,14 +67,16 @@ def cruza(parejas_aleatorias):
     punto_de_cruce = 8
     hijos = []
     for pareja in parejas_aleatorias:
-        tupla1 = pareja[0]
-        tupla2 = pareja[1]
-        # Realizar el cruce por punto fijo
-        hijo1 = tupla1[:punto_de_cruce] + tupla2[punto_de_cruce:]
-        hijo2 = tupla2[:punto_de_cruce] + tupla1[punto_de_cruce:]
-        # Agregar las tuplas cruzadas a la lista de parejas cruzadas
-        hijos.append(hijo1)
-        hijos.append(hijo2)
+        if random.randrange(0,100) <= posibilidad_cruza:
+            tupla1 = pareja[0]
+            tupla2 = pareja[1]
+            # Realizar el cruce por punto fijo
+            hijo1 = tupla1[:punto_de_cruce] + tupla2[punto_de_cruce:]
+            hijo2 = tupla2[:punto_de_cruce] + tupla1[punto_de_cruce:]
+            # Agregar las tuplas cruzadas a la lista de parejas cruzadas
+            hijos.append(hijo1)
+            hijos.append(hijo2)
+
     return hijos
 
 def reparar_hijos(hijos_sin_reparar):
@@ -188,7 +194,7 @@ def obtener_diferencia():
         aux_valores = []
         aux = 0
         for atributos in posicion_valor_diferencia[elemento][2]:
-            valor = atributos - int(valores_atributos[aux])
+            valor = atributos - float(valores_atributos[aux])
             aux_valores.append(valor)
             aux = aux + 1
         posicion_valor_diferencia[elemento].append(aux_valores)
@@ -211,7 +217,7 @@ def ordenar_elitsta():
     ordenado = sorted(combinado, key=lambda x: x[0][4])
     arreglos_ordenados = [tupla[1] for tupla in ordenado]
     obtener_valores_grafica([arreglos_ordenados[0]],[arreglos_ordenados[-1]])
-    poblacion = arreglos_ordenados[:7]
+    poblacion = arreglos_ordenados[:poblacion_maxima]
 
 
 def obtener_valores_grafica(mayor,menor):
@@ -241,7 +247,7 @@ def obtener_diferencia_final(arreglo2):
     aux_valores = []
     aux = 0
     for atributos in arreglo2[2]:
-            valor = atributos - int(valores_atributos[aux])
+            valor = atributos - float(valores_atributos[aux])
             aux_valores.append(valor)
             aux = aux + 1
     arreglo4.append(aux_valores)
@@ -253,16 +259,20 @@ def obtener_diferencia_final(arreglo2):
 def show(arreglo1,arreglo2,arreglo3,arreglo4):
     def update_graph():
     # Datos de ejemplo
-        iteraciones = np.arange(0,numero_iteraciones) # Un array de 0 a 100, reemplaza esto con tus datos
-        linea1 = arreglo_mejor
-        linea2 = arreglo_peor
-        plt.figure(figsize=(10,6))
+        iteraciones = np.arange(0, numero_iteraciones) 
+
+        # Asegurar que los arreglos tengan la misma longitud que 'iteraciones'
+        linea1 = arreglo_mejor[:numero_iteraciones]
+        linea2 = arreglo_peor[:numero_iteraciones]
+        plt.figure(figsize=(10, 6))
         plt.plot(iteraciones, linea1, marker='o', linestyle='-', label='El mejor')
         plt.plot(iteraciones, linea2, marker='o', linestyle='-', label='El peor')
         plt.ylim(0, 6000)
+        # Ajustar los ticks del eje x para mostrar todos los puntos
+        plt.xticks(iteraciones)
         plt.xlabel('Iteraciones')
         plt.ylabel('Valor')
-        plt.title('Gráfico de Lineas')
+        plt.title('Gráfico de Líneas')
         plt.legend()
         mplcursors.cursor(hover=True)
         plt.show()
@@ -299,14 +309,19 @@ def create_input_window():
         global posibilidad_mut_individuo  
         global posibilidad_mut_gen 
         global numero_iteraciones 
+        global poblacion_maxima
+        global posibilidad_cruza
         input_values = [entry.get() for entry in entry_list[:11]]
         remaining_values = [entry.get() for entry in entry_list[11:]]
         root.destroy()
         valores_atributos = input_values
         numero_de_poblacion_iniical = int(remaining_values[0])
-        posibilidad_mut_individuo = int(remaining_values[1])
-        posibilidad_mut_gen = int(remaining_values[2])
-        numero_iteraciones = int(remaining_values[3])
+        poblacion_maxima = int(remaining_values[1])
+        posibilidad_cruza = int(remaining_values[2])
+        posibilidad_mut_individuo = int(remaining_values[3])
+        posibilidad_mut_gen = int(remaining_values[4])
+        numero_iteraciones = int(remaining_values[5])
+        print(remaining_values)
         return input_values, remaining_values
 
     root = tk.Tk()
@@ -326,7 +341,7 @@ def create_input_window():
         return entry
     
     atributos = ["Energía","Proteína","Grasa","Calcio","Hierro","Vitamina A","Tiamina","Riboflavina","Niacina","Folato","Vitamina C"]
-    entrdas = ["cantidad de poblacion inicial","posibilidad de mutacion del individuo", "posibilidad de mutacion del gen", "numero de iteraciones"]
+    entrdas = ["cantidad de poblacion inicial","poblacion Maxima","probabilidad de cruza","probabilidad de mutacion del individuo", "probabilidad de mutacion del gen", "cantidad de iteraciones"]
     entry_list = []
     for i in range(11):
         entry = create_label_and_entry(root, f"{atributos[i]}:")
@@ -335,7 +350,7 @@ def create_input_window():
     separator = ttk.Separator(root, orient="horizontal")
     separator.pack(fill="x", pady=10)
 
-    for i in range(0, 4):
+    for i in range(0, 6):
         entry = create_label_and_entry(root, f"{entrdas[i]}:")
         entry_list.append(entry)
 
@@ -357,7 +372,7 @@ def main():
     poblacion = generar_n_individuos_aleatorios()
   
       ##inicia el bucle
-    for i in range(30):
+    for i in range(numero_iteraciones):
         parejas_aleatorias = seleccion_parejas()
             
 
